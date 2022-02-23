@@ -59,10 +59,8 @@ public class BotClient {
         .path("sendMessage")
         .build();
 
-    HttpRequest<?> request = HttpRequest.POST(uri, update);
-
     try {
-      httpClient.toBlocking().retrieve(request);
+      httpClient.toBlocking().retrieve(HttpRequest.POST(uri, update));
       logger.info("Sending message: {}", update.toString());
     } catch (HttpClientResponseException e) {
       logger.error("status: {}, info: {}, response: {}", e.getStatus(), e.getMessage(), e.getResponse().body());
