@@ -1,7 +1,18 @@
 micronaut:
+  server:
+    port: 5001
   application:
     name: noter
+
 netty:
   default:
     allocator:
       max-order: 3
+
+ngrok:
+  host: https://fe5b-109-252-215-13.ngrok.io
+  local: http://localhost:5001
+
+telegram:
+  token: 5048393640:AAGA0cYs7DKEm92a6v_QcTDUEFVkIX0p87Q
+  api: https://api.telegram.org
