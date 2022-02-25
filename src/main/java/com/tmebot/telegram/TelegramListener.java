@@ -1,8 +1,8 @@
 package com.tmebot.telegram;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tmebot.exception.NotMessageException;
 import com.tmebot.service.MessageService;
+import com.tmebot.telegram.model.Update;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -16,17 +16,20 @@ import org.slf4j.LoggerFactory;
 public class TelegramListener {
 
   private final Logger logger = LoggerFactory.getLogger(BotClient.class);
-  private final ObjectMapper mapper = new ObjectMapper();
 
   @Inject
   private MessageService messageService;
 
   @Post
   @Produces(MediaType.APPLICATION_JSON)
-  public void telegramListener(@Body String request) throws JsonProcessingException {
+  public void telegramListener(@Body String request) {
     logger.info("Telegram request: {}", request);
 
-    Update update = Update.decodeUpdate(mapper, request);
-    messageService.handleUpdate(update);
+    try {
+      Update update = Update.fromString(request);
+      messageService.handleUpdate(update);
+    } catch (NotMessageException e) {
+      logger.error("{}: {}", e.getMessage(), request);
+    }
   }
 }

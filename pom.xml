@@ -31,6 +31,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>fm.finch</groupId>
+      <artifactId>finch-json</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.micronaut</groupId>
       <artifactId>micronaut-inject</artifactId>
       <scope>compile</scope>

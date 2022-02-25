@@ -10,7 +10,7 @@ netty:
       max-order: 3
 
 ngrok:
-  host: https://fe5b-109-252-215-13.ngrok.io
+  host: https://8925-109-252-215-13.ngrok.io
   local: http://localhost:5001
 
 telegram:

@@ -1,8 +1,7 @@
 package com.tmebot.telegram;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tmebot.telegram.model.Update;
+import fm.finch.json.json.Json;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.HttpClient;
@@ -36,21 +35,18 @@ public class BotClient {
   }
 
   @PostConstruct
-  private void setWebhook() throws JsonProcessingException {
+  private void setWebhook() {
     URI uri = UriBuilder.of("/bot" + token)
         .path("setWebhook")
         .queryParam("url", ngrokHost + "/" + token)
         .build();
 
     String response = httpClient.toBlocking().retrieve(HttpRequest.GET(uri));
-
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode json = mapper.readTree(response);
-
-    if (json.get("ok").asBoolean()) {
+    Json body = Json.parse(response);
+    if (body.get("ok").asBoolean()) {
       logger.info("Web hook initialized. Ngrok proxy {} -> {}", ngrokHost, ngrokLocal);
     } else {
-      logger.error("Web hook initialized failed: {}", json.get("description").asText());
+      logger.error("Web hook initialized failed: {}", body);
     }
   }
 
