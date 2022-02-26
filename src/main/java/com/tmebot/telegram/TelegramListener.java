@@ -8,13 +8,15 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SetWebhook;
 import com.pengrad.telegrambot.response.BaseResponse;
 import com.pengrad.telegrambot.response.SendResponse;
-import io.micronaut.context.annotation.Value;
+import com.tmebot.config.BotConfig;
+import com.tmebot.service.UpdateHandler;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Produces;
 import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,23 +26,21 @@ public class TelegramListener {
 
   private final Logger logger = LoggerFactory.getLogger(TelegramListener.class);
 
-  @Value("${telegram.token}")
-  private String token;
-
-  @Value("${ngrok.host}")
-  private String ngrokHost;
-
-  @Value("${ngrok.local}")
-  private String ngrokLocal;
-
   private TelegramBot bot;
+
+  @Inject
+  private BotConfig config;
+
+  @Inject
+  private UpdateHandler handler;
+
 
   @PostConstruct
   private void init() {
-    bot = new TelegramBot(token);
-    BaseResponse response = bot.execute(new SetWebhook().url(ngrokHost + "/" + token));
+    bot = new TelegramBot(config.token());
+    BaseResponse response = bot.execute(new SetWebhook().url(config.proxy()));
     if (response.isOk()) {
-      logger.info("Web hook initialized. Ngrok proxy {} -> {}", ngrokHost, ngrokLocal);
+      logger.info("Web hook initialized. Ngrok proxy {} -> {}", config.host(), config.local());
     } else {
       logger.error("Web hook initialized failed: {}", response.description());
       System.exit(1);
@@ -52,7 +52,18 @@ public class TelegramListener {
   public void telegramListener(@Body String request) {
     Update update = BotUtils.parseUpdate(request);
 
-    SendMessage message = new SendMessage(update.message().chat().id(), update.message().text());
+    if (update.message() != null && update.message().text() != null) {
+      if (config.commands().contains(update.message().text())) {
+        send(handler.commandHandler(update.message()));
+      } else {
+        send(handler.messageHandler(update.message()));
+      }
+    } else if (update.callbackQuery() != null) {
+      send(handler.callbackHandler(update));
+    }
+  }
+
+  private void send(SendMessage message) {
     bot.execute(message, new Callback<SendMessage, SendResponse>() {
       @Override
       public void onResponse(SendMessage request, SendResponse response) {
