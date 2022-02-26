@@ -12,6 +12,7 @@ import jakarta.inject.Singleton;
 public record UpdateHandler(@Inject BotConfig config) implements Handler {
 
   public SendMessage messageHandler(Message message) {
+
     // TODO
     return null;
   }
